@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>boi</title>
+</head>
+<body>
+	<script src="js/three.min.js"> </script>
+	<script src="js/OBJLoader.js"></script>
+	<script src="js/OrbitControls.js"></script>
+	<script src="js/MTLLoader.js"></script>
+	<script type="text/javascript">
+
+		var scene, camera, renderer, baymax, loadingManager, RESOURCES_LOADED = false;
+
+		init();
+		animate();
+
+		function init() {
+			scene = new THREE.Scene();
+			var WIDTH = window.innerWidth,
+				HEIGHT = window.innerHeight;
+
+			renderer = new THREE.WebGLRenderer({antialias: true});
+			renderer.setSize(WIDTH / HEIGHT);
+			document.body.appendChild(renderer.domElement);
+
+			camera = new THREE.PerspectiveCamera(45, WIDTH/HEIGHT, 0.1, 1000);
+			camera.position.set(0,0,10);
+			scene.add(camera);
+
+			window.addEventListener('resize', function() {
+				var WIDTH = window.innerWidth,
+				    HEIGHT = window.innerHeight;
+				renderer.setSize(WIDTH, HEIGHT);
+				camera.aspect = WIDTH / HEIGHT;
+				camera.updateProjectionMatrix();
+			});
+
+			renderer.setClearColor(0x333F47);
+
+			var light = new THREE.PointLight(0xffffff);
+			light.position.set(0,100,100);
+			scene.add(light);
+
+			loadingManager = new THREE.LoadingManager();
+
+			loadingManager.onLoad = function() {
+				RESOURCES_LOADED = true;
+			};
+
+			var mtlLoader = new THREE.MTLLoader(loadingManager);
+			mtlLoader.load("models/Bigmax_White_OBJ.mtl", function(materials) {
+				materials.preload();
+
+				var loader = new THREE.OBJLoader(loadingManager);
+				loader.load('models/max.obj', function(object) {
+					baymax = object;
+					scene.add(object);	
+				});
+			});
+
+			controls = new THREE.OrbitControls(camera, renderer.domElement);				
+		}
+
+		function animate() {
+			requestAnimationFrame(animate);
+
+			if (RESOURCES_LOADED == false) {
+				return;
+			}
+
+			baymax.rotation.y += 0.1;
+			baymax.rotation.z += 0.1;
+
+			baymax.position.x += 0.1;
+			baymax.position.z -= 0.1;
+
+			renderer.render(scene, camera);
+			controls.update();
+		}
+	</script>
+</body>
+</html>
